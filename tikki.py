@@ -168,20 +168,25 @@ def human_vs_machine(p):
     for p in players_:
         if p != "Human":
             print("Look file 'pakka' for card indexies")
-            p.hand = [cards[input(("Card " + str(i+1) + "index"))] for i in range(5)]
+            p.hand = [cards[int(input(("Card " + str(i+1) + " index: ")))] for i in range(5)]
     leader = random.randint(0, player_n-1)
-    print(leader)
+
     suit = ""
     for turn in range(5):
+        print(leader)
         for per in range(player_n):
             if players_[(leader+per)%player_n] == "Human":
                 ind = int(input("Index of card to be played"))
-                table[(leader+per)%player_n][turn] == cards[ind]
+                table[(leader+per)%player_n][turn] = cards[ind]
                 if per == 0:
-                    suit = input("Played suit (h, r, i, p): ")
+                    while True:
+                        suit = input("Played suit (h, r, i, p): ")
+                        if suit == "h" or suit == "r" or suit == "i" or suit == "p":
+                            break
             else:
-                input_dat = test_input_dat(p.place, table)
+                input_dat = test_input_dat(p.place, table, p=players_)
                 p = players_[(leader+per)%player_n]
+                print(p.place)
                 if per == 0:
                     weights = [a + b for a, b in zip(p.not_played, p.choose_card(input_dat))]
                     table[p.place][turn] = p.hand[weights.index(max(weights))]
@@ -195,20 +200,25 @@ def human_vs_machine(p):
                         if p.hand[i].maa == suit:
                             correct_suit[i] = 1
                     cor = [a + b for a, b in zip(p.not_played, correct_suit)]
-                    weights = [a + b for a, b in zip(cor, p.choose_card(input_dat))]
-                    self.table[p.place][turn] = p.hand[weights.index(max(weights))]
+                    c_v = p.choose_card(input_dat)
+                    weights = [a + b for a, b in zip(cor, c_v)]
+                    print(correct_suit)
+                    print(c_v)
+                    print(p.not_played)
+                    print(weights)
+                    table[p.place][turn] = p.hand[weights.index(max(weights))]
                     p.not_played[weights.index(max(weights))] = 0
                     print(table[p.place][turn].maa, table[p.place][turn].num)
         leading_card = 0
         for i in range(player_n):
-            if self.table[i][turn].maa == suit and self.table[i][turn].num > leading_card:
-                leading_card = self.table[i][turn].num
+            if table[i][turn].maa == suit and table[i][turn].num > leading_card:
+                leading_card = table[i][turn].num
                 leader = i
 
-def test_input_dat(place, table):
+def test_input_dat(place, table, p=players ):
         dat = []
         for i in range(5):
-            dat.append(players[place].hand[i].c_id)
+            dat.append(p[place].hand[i].c_id)
         for j in range(player_n):
             for i in range(5):
                 if table[j][i] == 0:
@@ -253,7 +263,7 @@ if __name__ == "__main__":
             else:
                 p, wins, t, confidence = training_cycle(cycle_number)
             cycle_number += 1
-            if cycle_number % 5000 == 0:
+            if cycle_number % 9000 == 0:
                 print("State saved, time since beginning: " + str("{0:.1f}".format(((time.time()-t_start)/60)))
                       + " minutes")
                 save_state(p, cycle_number)
